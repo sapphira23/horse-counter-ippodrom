@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Учёт лошадей на ипподроме</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; }
+        .upload-area { border: 2px dashed #4CAF50; padding: 30px; text-align: center; margin: 20px 0; border-radius: 8px; }
+        #result { margin-top: 30px; text-align: center; }
+        .stats { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px; }
+        button { background: #4CAF50; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+    <h1>🐎 Учёт лошадей на ипподроме</h1>
+    
+    <div class="upload-area">
+        <h3>Загрузите изображение</h3>
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="processImage()">Обработать</button>
+    </div>
+
+    <div class="stats">
+        <h3>Статистика</h3>
+        <p>Всего обработано изображений: <span id="total">0</span></p>
+        <p>Последний результат: <span id="lastCount">—</span> лошадей</p>
+        <button onclick="location.href='/report/pdf'">Скачать PDF-отчёт</button>
+        <button onclick="location.href='/report/excel'">Скачать Excel-отчёт</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        async function processImage() {
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+            if (!file) return alert('Выберите файл!');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('type', 'image');
+            
+            const res = await fetch('/process', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                document.getElementById('result').innerHTML = `
+                    <h3>Результат:</h3>
+                    <p>Обнаружено лошадей: <strong>${data.horse_count}</strong></p>
+                    <img src="${data.result_url}" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;">
+                `;
+                document.getElementById('lastCount').textContent = data.horse_count;
+                
+                // Обновляем статистику
+                const history = await fetch('/history').then(r => r.json());
+                document.getElementById('total').textContent = history.length;
+            } else {
+                alert('Ошибка: ' + data.error);
+            }
+        }
+    </script>
+</body>
+</html>
