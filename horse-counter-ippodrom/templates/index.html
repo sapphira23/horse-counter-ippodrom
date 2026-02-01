@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Учет лошадей</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; color: #333; }
+        .upload-section { background: #f4f4f9; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+        .result-section { text-align: center; margin-bottom: 30px; }
+        img { max-width: 100%; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        .report-section { background: #e9ecef; padding: 15px; border-radius: 10px; text-align: center; }
+        .btn { display: inline-block; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; margin: 5px; }
+        .btn-blue { background: #007bff; }
+
+        .centered-header {
+            width: 90%; /* Or any specific width */
+            margin: 0 auto; /* Centers the block horizontally */
+            text-align: center; /* Centers the text inside the block */
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="centered-header">
+        <h2>Система мониторинга ипподрома</h2>
+    </div>
+
+    <div class="upload-section">
+        <form action="/predict" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*">
+            <button type="submit" class="btn btn-blue">Запустить обработку</button>
+        </form>
+    </div>
+
+    {% if image_path %}
+    <div class="result-section">
+        <h2>Результат: {{ count }} лошадей</h2>
+        <img src="{{ url_for('static', filename=image_path) }}" alt="Результат">
+    </div>
+    {% endif %}
+
+    <div class="history-section">
+        <h3>Последние 5 запросов</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Время</th>
+                    <th>Имя файла</th>
+                    <th>Кол-во лошадей</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in history %}
+                <tr>
+                    <td>{{ item.date }}</td>
+                    <td>{{ item.time }}</td>
+                    <td>{{ item.filename }}</td>
+                    <td>{{ item.horse_count }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center;">История пока пуста</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="report-section">
+        <a href="/download/json" class="btn">Скачать историю JSON</a>
+        <a href="/download/excel" class="btn">Скачать отчет Excel</a>
+    </div>
+</body>
+</html>
